@@ -1,0 +1,11 @@
+[Unit]
+Description=Issue the synora-ai.uz certificate once DNS resolves
+After=network-online.target nginx.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/synora-certbot-bootstrap.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=synora-certbot
