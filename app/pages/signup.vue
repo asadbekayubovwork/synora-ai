@@ -133,7 +133,7 @@ function messageFrom(err: unknown, fallback: string) {
 </script>
 
 <template>
-  <div class="flex min-h-dvh flex-col bg-white">
+  <div class="flex min-h-dvh flex-col bg-surface">
     <main class="flex flex-1 items-center justify-center px-5 py-12">
       <div class="w-full max-w-[360px]">
         <div class="flex justify-center">

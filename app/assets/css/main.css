@@ -1,10 +1,19 @@
 @import "tailwindcss";
 
+/*
+  `dark:` keys off the `data-theme` attribute that `plugins/theme.client.ts`
+  stamps on <html>, not off `prefers-color-scheme` — a chosen theme has to beat
+  the OS setting. Nearly all of the palette flips through the tokens below, so
+  reach for this variant only where a colour can't be expressed as a token.
+*/
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 
   /* Surfaces */
+  --color-surface: #ffffff;
   --color-canvas: #f7f7f7;
   --color-line: #e6e6e6;
   --color-line-strong: #cfcfcf;
@@ -17,18 +26,47 @@
   /* Actions */
   --color-brand: #0a0a0a;
   --color-brand-hover: #262626;
+  --color-on-brand: #ffffff;
   --color-danger: #e5484d;
+}
+
+/*
+  The dark palette re-points the same tokens, so components stay theme-agnostic:
+  anything written against `ink`/`line`/`canvas`/`brand` flips for free. Note
+  that `brand` inverts — the primary button is near-white on dark, with
+  `on-brand` carrying its label back to near-black.
+*/
+[data-theme="dark"] {
+  --color-surface: #0b0b0c;
+  --color-canvas: #141417;
+  --color-line: #26262a;
+  --color-line-strong: #3d3d44;
+
+  --color-ink: #f2f2f3;
+  --color-ink-soft: #a3a3aa;
+  --color-ink-muted: #808089;
+
+  --color-brand: #f2f2f3;
+  --color-brand-hover: #dcdcde;
+  --color-on-brand: #0b0b0c;
+  --color-danger: #ff6369;
 }
 
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Form controls, scrollbars and caret follow the theme, not the OS. */
+    color-scheme: light;
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
   }
 
   body {
     font-family: var(--font-sans);
-    background-color: #fff;
+    background-color: var(--color-surface);
     color: var(--color-ink);
   }
 
@@ -66,6 +104,19 @@
   margin-block: -0.375rem;
 }
 
+/*
+  A theme flip looks disjointed when only the elements already carrying a
+  `transition` utility cross-fade while the page behind them snaps. The plugin
+  sets `data-theme-changing` for the length of the flip so every surface moves
+  together, then drops it — the blanket rule costs nothing the rest of the time.
+*/
+[data-theme-changing] *,
+[data-theme-changing] *::before,
+[data-theme-changing] *::after {
+  transition: background-color 200ms ease, border-color 200ms ease,
+    color 200ms ease, fill 200ms ease, outline-color 200ms ease !important;
+}
+
 /* Route transition — driven by `app.pageTransition` in nuxt.config.ts. */
 .page-enter-active,
 .page-leave-active {
@@ -95,6 +146,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-theme-changing] *,
+  [data-theme-changing] *::before,
+  [data-theme-changing] *::after {
+    transition: none !important;
+  }
+
   .page-enter-active,
   .page-leave-active,
   .step-enter-active,

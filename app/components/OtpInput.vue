@@ -113,7 +113,7 @@ defineExpose({ focus: () => focusAt(0) })
       :disabled="disabled"
       :aria-label="`Digit ${index + 1} of ${length}`"
       :aria-invalid="invalid || undefined"
-      class="h-12 min-w-0 flex-1 rounded-xl border bg-white text-center text-[19px] font-medium text-ink outline-none transition disabled:cursor-not-allowed disabled:opacity-50"
+      class="h-12 min-w-0 flex-1 rounded-xl border bg-surface text-center text-[19px] font-medium text-ink outline-none transition disabled:cursor-not-allowed disabled:opacity-50"
       :class="invalid
         ? 'border-danger focus:border-danger'
         : 'border-line hover:border-line-strong focus:border-ink'"

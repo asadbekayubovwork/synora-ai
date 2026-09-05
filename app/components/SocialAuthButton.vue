@@ -8,7 +8,7 @@ defineProps<{
 <template>
   <button
     type="button"
-    class="relative flex h-12 w-full items-center justify-center rounded-xl border border-line bg-white px-12 text-[15px] font-medium text-ink transition hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+    class="relative flex h-12 w-full items-center justify-center rounded-xl border border-line bg-surface px-12 text-[15px] font-medium text-ink transition hover:bg-canvas focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
   >
     <!-- The mark sits flush left while the label stays centred in the full button. -->
     <span class="absolute left-4 flex items-center">

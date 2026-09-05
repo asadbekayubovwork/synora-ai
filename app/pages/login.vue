@@ -30,7 +30,7 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="flex min-h-dvh items-center justify-center bg-white px-5 py-12">
+  <div class="flex min-h-dvh items-center justify-center bg-surface px-5 py-12">
     <div class="w-full max-w-[360px]">
       <div class="flex justify-center">
         <SynoraLogo />

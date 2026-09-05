@@ -13,7 +13,7 @@ withDefaults(
   <button
     :type="type"
     :disabled="disabled || pending"
-    class="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand text-[15px] font-medium text-white transition hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-brand"
+    class="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand text-[15px] font-medium text-on-brand transition hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-brand"
   >
     <svg
       v-if="pending"
