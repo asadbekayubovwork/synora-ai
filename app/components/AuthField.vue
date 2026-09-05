@@ -31,6 +31,10 @@ const resolvedType = computed(() =>
     </div>
 
     <div class="relative">
+      <!--
+        iOS Safari zooms the page when a focused input's text is under 16px, so
+        touch devices get 16px while pointer devices keep the designed 15px.
+      -->
       <input
         :id="id"
         v-model="model"
@@ -38,7 +42,7 @@ const resolvedType = computed(() =>
         :placeholder="placeholder"
         :autocomplete="autocomplete"
         :aria-invalid="invalid || undefined"
-        class="h-12 w-full rounded-xl border bg-white px-4 text-[15px] text-ink outline-none transition placeholder:text-ink-muted"
+        class="h-12 w-full rounded-xl border bg-white px-4 text-[15px] text-ink outline-none transition placeholder:text-ink-muted pointer-coarse:text-[16px]"
         :class="[
           invalid
             ? 'border-danger focus:border-danger'

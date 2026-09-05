@@ -9,6 +9,8 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
   app: {
+    // Transition CSS lives in ~/assets/css/main.css
+    pageTransition: { name: 'page', mode: 'out-in' },
     head: {
       htmlAttrs: { lang: 'en' },
       link: [

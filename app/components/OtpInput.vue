@@ -100,7 +100,7 @@ defineExpose({ focus: () => focusAt(0) })
 </script>
 
 <template>
-  <div class="flex gap-2">
+  <div class="flex gap-1.5 sm:gap-2">
     <input
       v-for="(char, index) in chars"
       :key="index"

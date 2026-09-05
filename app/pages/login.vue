@@ -64,59 +64,27 @@ async function onSubmit() {
           <template #labelAction>
             <NuxtLink
               to="/forgot-password"
-              class="rounded text-[15px] text-ink-muted underline-offset-4 transition hover:text-ink-soft hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              class="tap-target rounded text-[15px] text-ink-muted underline-offset-4 transition hover:text-ink-soft hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               Forgot your password?
             </NuxtLink>
           </template>
         </AuthField>
 
-        <p
-          v-if="formError"
-          role="alert"
-          class="flex items-center gap-2 text-[15px] font-medium text-danger"
-        >
-          <svg
-            viewBox="0 0 20 20"
-            class="size-[19px] shrink-0"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M8.7 3.2a1.5 1.5 0 0 1 2.6 0l6.1 10.8a1.5 1.5 0 0 1-1.3 2.25H3.9A1.5 1.5 0 0 1 2.6 14L8.7 3.2Z" />
-            <path d="M10 7.9v3.3" />
-            <path d="M10 13.7h.01" />
-          </svg>
+        <FormError v-if="formError">
           {{ formError }}
-        </p>
+        </FormError>
 
-        <button
-          type="submit"
-          :disabled="pending"
-          class="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand text-[15px] font-medium text-white transition hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <svg
-            v-if="pending"
-            viewBox="0 0 16 16"
-            class="size-4 animate-spin"
-            fill="none"
-            aria-hidden="true"
-          >
-            <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-opacity="0.3" stroke-width="2" />
-            <path d="M14.5 8A6.5 6.5 0 0 0 8 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-          </svg>
+        <PrimaryButton :pending="pending">
           {{ pending ? 'Signing in…' : 'Sign in' }}
-        </button>
+        </PrimaryButton>
       </form>
 
       <p class="mt-5 text-center text-[15px] text-ink">
         Don't have an account?
         <NuxtLink
           to="/signup"
-          class="rounded underline underline-offset-2 transition hover:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          class="tap-target rounded underline underline-offset-2 transition hover:text-ink-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           Sign up
         </NuxtLink>
