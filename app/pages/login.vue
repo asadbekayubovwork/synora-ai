@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 
+definePageMeta({ layout: 'auth' })
+
 useHead({ title: 'Log in · Synora-AI' })
 
 const form = reactive({ email: '', password: '' })

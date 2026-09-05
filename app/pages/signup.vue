@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 
+definePageMeta({ layout: 'auth' })
+
 useHead({ title: 'Create an account · Synora-AI' })
 
 const RESEND_SECONDS = 60
