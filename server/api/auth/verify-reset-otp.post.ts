@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Email and code are required.' })
   }
 
-  const result = consumeOtp('reset', email, code)
+  const result = consumeOtp(email, code)
   if (!result.ok) {
     throw createError({ statusCode: 400, statusMessage: result.reason })
   }

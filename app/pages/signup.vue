@@ -1,16 +1,26 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
-definePageMeta({ layout: 'auth' })
+definePageMeta({ layout: 'auth', middleware: 'guest' })
 
 useHead({ title: 'Create an account · Synora-AI' })
 
 const RESEND_SECONDS = 60
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
-const step = ref<'details' | 'otp'>('details')
+const route = useRoute()
+const { register, verifyOtp, resendOtp } = useAuth()
 
-const form = reactive({ email: '', password: '' })
+/*
+  `?verify=<email>` opens straight on the code step. Login sends unverified
+  accounts here: the password was accepted, so all that is left is the code
+  already sitting in their inbox.
+*/
+const pendingEmail = typeof route.query.verify === 'string' ? route.query.verify : ''
+
+const step = ref<'details' | 'otp'>(pendingEmail ? 'otp' : 'details')
+
+const form = reactive({ email: pendingEmail, password: '' })
 const code = ref('')
 
 const error = ref('')
@@ -22,6 +32,12 @@ const otpRef = ref<{ focus: () => void } | null>(null)
 function focusOtp() {
   if (step.value === 'otp') otpRef.value?.focus()
 }
+
+// Arriving on the code step directly means no transition runs, so `@after-enter`
+// never fires and the focus above would never happen.
+onMounted(() => {
+  if (pendingEmail) focusOtp()
+})
 
 const canSubmitDetails = computed(() => Boolean(form.email.trim() && form.password))
 const canVerify = computed(() => code.value.length === 6)
@@ -60,18 +76,14 @@ async function onSubmitDetails() {
 
   pending.value = true
   try {
-    // TODO: point this at the real Synora-AI signup endpoint.
-    await $fetch('/api/auth/signup', {
-      method: 'POST',
-      body: { email: form.email.trim(), password: form.password },
-    })
+    await register(form.email.trim(), form.password)
     step.value = 'otp'
     code.value = ''
     startCooldown()
     // Focus lands via the step transition's @after-enter — the input isn't mounted yet.
   }
   catch (err) {
-    error.value = messageFrom(err, 'We could not create your account. Please try again.')
+    error.value = apiErrorMessage(err, 'We could not create your account. Please try again.')
   }
   finally {
     pending.value = false
@@ -86,15 +98,12 @@ async function onVerify() {
   error.value = ''
   pending.value = true
   try {
-    // TODO: point this at the real Synora-AI verification endpoint.
-    await $fetch('/api/auth/verify-otp', {
-      method: 'POST',
-      body: { email: form.email.trim(), code: code.value },
-    })
+    // Verifying signs the user in, so there is no login round-trip after this.
+    await verifyOtp(form.email.trim(), code.value)
     await navigateTo('/')
   }
   catch (err) {
-    error.value = messageFrom(err, 'That code is not correct. Please try again.')
+    error.value = apiErrorMessage(err, 'That code is not correct. Please try again.')
     code.value = ''
     otpRef.value?.focus()
   }
@@ -108,16 +117,13 @@ async function onResend() {
 
   error.value = ''
   try {
-    await $fetch('/api/auth/resend-otp', {
-      method: 'POST',
-      body: { email: form.email.trim() },
-    })
+    await resendOtp(form.email.trim())
     code.value = ''
     startCooldown()
     otpRef.value?.focus()
   }
   catch (err) {
-    error.value = messageFrom(err, 'We could not resend the code. Please try again.')
+    error.value = apiErrorMessage(err, 'We could not resend the code. Please try again.')
   }
 }
 
@@ -126,11 +132,6 @@ function backToDetails() {
   code.value = ''
   error.value = ''
   clearInterval(timer)
-}
-
-function messageFrom(err: unknown, fallback: string) {
-  const status = (err as { data?: { statusMessage?: string } })?.data?.statusMessage
-  return status || fallback
 }
 </script>
 

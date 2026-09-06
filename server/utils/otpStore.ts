@@ -1,18 +1,17 @@
 import { randomUUID } from 'node:crypto'
 
 /**
- * Development stand-in for the real Synora-AI auth backend.
+ * Development stand-in for the password-reset endpoints.
  *
- * Codes and reset tickets live in memory only: they are lost on restart and are
- * not shared between server instances. Replace this with the real API before shipping.
+ * Signup and sign-in now go to the real Synora API — see `composables/useAuth.ts`.
+ * Only the reset flow is still stubbed, because the API does not implement it yet.
+ *
+ * Codes and reset tickets live in memory: they are lost on restart and are not
+ * shared between server instances. Replace this once the API grows the flow.
  */
-
-export type OtpPurpose = 'signup' | 'reset'
 
 interface PendingCode {
   code: string
-  /** Only set for `signup` — the password to activate once the email is verified. */
-  password?: string
   expiresAt: number
 }
 
@@ -22,29 +21,24 @@ const TICKET_TTL_MS = 15 * 60 * 1000
 const pending = new Map<string, PendingCode>()
 const tickets = new Map<string, number>()
 
-const keyFor = (purpose: OtpPurpose, email: string) => `${purpose}:${email.toLowerCase()}`
+const keyFor = (email: string) => email.toLowerCase()
 
-export function issueOtp(purpose: OtpPurpose, email: string, password?: string) {
+export function issueOtp(email: string) {
   const code = String(Math.floor(100000 + Math.random() * 900000))
-  pending.set(keyFor(purpose, email), {
-    code,
-    password,
-    expiresAt: Date.now() + CODE_TTL_MS,
-  })
+  pending.set(keyFor(email), { code, expiresAt: Date.now() + CODE_TTL_MS })
 
   // Stands in for the email delivery.
-  console.info(`[dev] ${purpose} OTP for ${email}: ${code}`)
+  console.info(`[dev] reset OTP for ${email}: ${code}`)
   return code
 }
 
-export function reissueOtp(purpose: OtpPurpose, email: string) {
-  const entry = pending.get(keyFor(purpose, email))
-  if (!entry) return null
-  return issueOtp(purpose, email, entry.password)
+export function reissueOtp(email: string) {
+  if (!pending.has(keyFor(email))) return null
+  return issueOtp(email)
 }
 
-export function consumeOtp(purpose: OtpPurpose, email: string, code: string) {
-  const key = keyFor(purpose, email)
+export function consumeOtp(email: string, code: string) {
+  const key = keyFor(email)
   const entry = pending.get(key)
 
   if (!entry) return { ok: false, reason: 'No pending verification for this email.' } as const

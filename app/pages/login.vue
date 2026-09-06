@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 
-definePageMeta({ layout: 'auth' })
+definePageMeta({ layout: 'auth', middleware: 'guest' })
 
 useHead({ title: 'Log in · Synora-AI' })
+
+const route = useRoute()
+const { login } = useAuth()
 
 const form = reactive({ email: '', password: '' })
 const formError = ref('')
@@ -12,18 +15,26 @@ const pending = ref(false)
 async function onSubmit() {
   if (pending.value) return
 
+  const email = form.email.trim()
+
   formError.value = ''
   pending.value = true
   try {
-    // TODO: point this at the real Synora-AI auth endpoint.
-    await $fetch('/api/auth/login', {
-      method: 'POST',
-      body: { email: form.email.trim(), password: form.password },
-    })
-    await navigateTo('/')
+    await login(email, form.password)
+
+    // `auth` middleware parks the intended page here when it bounces a visitor.
+    const redirect = route.query.redirect
+    await navigateTo(typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/')
   }
-  catch {
-    formError.value = 'No user is found with these credentials.'
+  catch (err) {
+    // The password was right but the signup was never finished — the code step
+    // is where this user actually needs to be, not an error message.
+    if (apiErrorCode(err) === 'email_not_verified') {
+      await navigateTo({ path: '/signup', query: { verify: email } })
+      return
+    }
+
+    formError.value = apiErrorMessage(err, 'No user is found with these credentials.')
   }
   finally {
     pending.value = false

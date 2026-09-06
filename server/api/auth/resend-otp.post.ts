@@ -1,12 +1,13 @@
-// Development stub — see server/utils/otpStore.ts
+// Development stub for the password-reset flow — see server/utils/otpStore.ts
+// Signup resends go to the real API via `useAuth().resendOtp`.
 export default defineEventHandler(async (event) => {
-  const { email, purpose = 'signup' } = await readBody<{ email?: string, purpose?: OtpPurpose }>(event)
+  const { email } = await readBody<{ email?: string }>(event)
 
   if (!email) {
     throw createError({ statusCode: 400, statusMessage: 'Email is required.' })
   }
 
-  const code = reissueOtp(purpose, email)
+  const code = reissueOtp(email)
   if (!code) {
     throw createError({ statusCode: 400, statusMessage: 'No pending verification for this email.' })
   }

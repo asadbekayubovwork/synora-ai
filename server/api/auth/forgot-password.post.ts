@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
 
   // A real backend answers the same way whether or not the account exists, so
   // this endpoint cannot be used to discover which emails are registered.
-  const code = issueOtp('reset', email)
+  const code = issueOtp(email)
 
   // Handy while there is no real mail delivery; never exposed in production.
   return { ok: true, ...(import.meta.dev ? { devCode: code } : {}) }

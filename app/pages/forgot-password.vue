@@ -108,7 +108,7 @@ async function onResend() {
   try {
     await $fetch('/api/auth/resend-otp', {
       method: 'POST',
-      body: { email: email.value.trim(), purpose: 'reset' },
+      body: { email: email.value.trim() },
     })
     code.value = ''
     startCooldown()

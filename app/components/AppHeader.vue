@@ -90,13 +90,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onShortcut))
         <span class="absolute top-1.5 right-1.5 size-2 rounded-full bg-accent ring-2 ring-surface" />
       </button>
 
-      <button
-        type="button"
-        class="grid size-9 shrink-0 place-items-center rounded-full bg-linear-to-br from-[#e0407a] to-[#b4235c] text-[15px] font-medium text-white transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-        aria-label="Account menu"
-      >
-        A
-      </button>
+      <AccountMenu />
     </div>
   </header>
 </template>

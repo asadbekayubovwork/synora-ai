@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-definePageMeta({ pageTitle: 'Home' })
+definePageMeta({ pageTitle: 'Home', middleware: 'auth' })
 
 useHead({ title: 'Home · Synora-AI' })
 
-// TODO: read the signed-in user from the real Synora-AI session.
-const user = { name: 'Asadbek', workspace: "Asadbek's Workspace" }
+const { user } = useAuth()
+
+// The API only knows the email — there is no profile name to greet them by yet.
+const displayName = computed(() => {
+  const local = user.value?.email.split('@')[0] ?? ''
+  return local ? local.charAt(0).toUpperCase() + local.slice(1) : 'there'
+})
+
+const workspace = computed(() => `${displayName.value}'s Workspace`)
 
 const greeting = computed(() => {
   const hour = new Date().getHours()
@@ -19,10 +26,10 @@ const greeting = computed(() => {
 <template>
   <div class="mx-auto max-w-[1400px]">
     <p class="text-[15px] text-ink-soft">
-      {{ user.workspace }}
+      {{ workspace }}
     </p>
     <h2 class="mt-1 text-[32px] leading-tight tracking-[-0.02em] text-ink">
-      {{ greeting }}, {{ user.name }}
+      {{ greeting }}, {{ displayName }}
     </h2>
 
     <div class="mt-6 grid gap-4 xl:grid-cols-2">
