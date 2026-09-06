@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 
-definePageMeta({ layout: 'auth' })
+definePageMeta({ layout: 'auth', middleware: 'guest' })
+
+const { forgotPassword, verifyResetOtp, resetPassword } = useAuth()
 
 useHead({ title: 'Reset your password · Synora-AI' })
 
@@ -58,17 +60,15 @@ async function onRequestCode() {
 
   pending.value = true
   try {
-    // TODO: point this at the real Synora-AI password-reset endpoint.
-    await $fetch('/api/auth/forgot-password', {
-      method: 'POST',
-      body: { email: email.value.trim() },
-    })
+    // Succeeds even for an address with no account — the API will not say which,
+    // so the code step is shown either way.
+    await forgotPassword(email.value.trim())
     step.value = 'otp'
     code.value = ''
     startCooldown()
   }
   catch (err) {
-    error.value = messageFrom(err, 'We could not send a code. Please try again.')
+    error.value = apiErrorMessage(err, 'We could not send a code. Please try again.')
   }
   finally {
     pending.value = false
@@ -83,16 +83,12 @@ async function onVerify() {
   error.value = ''
   pending.value = true
   try {
-    const { resetToken: token } = await $fetch<{ resetToken: string }>('/api/auth/verify-reset-otp', {
-      method: 'POST',
-      body: { email: email.value.trim(), code: code.value },
-    })
-    resetToken.value = token
+    resetToken.value = await verifyResetOtp(email.value.trim(), code.value)
     step.value = 'password'
     clearInterval(timer)
   }
   catch (err) {
-    error.value = messageFrom(err, 'That code is not correct. Please try again.')
+    error.value = apiErrorMessage(err, 'That code is not correct. Please try again.')
     code.value = ''
     otpRef.value?.focus()
   }
@@ -106,16 +102,14 @@ async function onResend() {
 
   error.value = ''
   try {
-    await $fetch('/api/auth/resend-otp', {
-      method: 'POST',
-      body: { email: email.value.trim() },
-    })
+    // Requesting again is the resend: it issues a new code and retires the old one.
+    await forgotPassword(email.value.trim())
     code.value = ''
     startCooldown()
     otpRef.value?.focus()
   }
   catch (err) {
-    error.value = messageFrom(err, 'We could not resend the code. Please try again.')
+    error.value = apiErrorMessage(err, 'We could not resend the code. Please try again.')
   }
 }
 
@@ -136,18 +130,20 @@ async function onResetPassword() {
 
   pending.value = true
   try {
-    await $fetch('/api/auth/reset-password', {
-      method: 'POST',
-      body: {
-        email: email.value.trim(),
-        resetToken: resetToken.value,
-        password: passwords.next,
-      },
-    })
+    await resetPassword(email.value.trim(), resetToken.value, passwords.next)
     await navigateTo('/login')
   }
   catch (err) {
-    error.value = messageFrom(err, 'We could not reset your password. Please try again.')
+    // An expired or spent token cannot be retried from this step, so send the
+    // user back to the start rather than leaving them on a dead form.
+    const errorCode = apiErrorCode(err)
+    if (errorCode === 'reset_token_expired' || errorCode === 'reset_token_used' || errorCode === 'reset_token_invalid') {
+      backToEmail()
+      error.value = apiErrorMessage(err, 'This reset has expired. Please start again.')
+      return
+    }
+
+    error.value = apiErrorMessage(err, 'We could not reset your password. Please try again.')
   }
   finally {
     pending.value = false
@@ -159,11 +155,6 @@ function backToEmail() {
   code.value = ''
   error.value = ''
   clearInterval(timer)
-}
-
-function messageFrom(err: unknown, fallback: string) {
-  const status = (err as { data?: { statusMessage?: string } })?.data?.statusMessage
-  return status || fallback
 }
 </script>
 

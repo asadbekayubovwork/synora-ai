@@ -18,6 +18,17 @@ export interface TokenResponse {
   user: ApiUser
 }
 
+export interface MessageResponse {
+  ok: boolean
+  message: string
+}
+
+export interface ResetTokenResponse {
+  ok: boolean
+  reset_token: string
+  expires_in: number
+}
+
 export interface OtpSentResponse {
   ok: boolean
   message: string
