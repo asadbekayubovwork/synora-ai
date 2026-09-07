@@ -7,7 +7,12 @@ const open = ref(false)
 const root = ref<HTMLElement | null>(null)
 const trigger = ref<HTMLButtonElement | null>(null)
 
-const initial = computed(() => (user.value?.email[0] ?? '?').toUpperCase())
+/*
+  A Telegram account has no email at all, and a provider account may have a name
+  and nothing else, so both the label and the initial fall through the two.
+*/
+const label = computed(() => user.value?.email ?? user.value?.fullName ?? 'Signed in')
+const initial = computed(() => (user.value?.email ?? user.value?.fullName ?? '?').charAt(0).toUpperCase())
 
 function close(refocus = false) {
   if (!open.value) return
@@ -59,11 +64,20 @@ async function onSignOut() {
       role="menu"
       class="absolute top-full right-0 z-40 mt-2 w-56 overflow-hidden rounded-xl border border-line bg-surface py-1 shadow-lg"
     >
-      <p class="truncate px-3 py-2 text-[13px] text-ink-muted" :title="user?.email">
-        {{ user?.email }}
+      <p class="truncate px-3 py-2 text-[13px] text-ink-muted" :title="label">
+        {{ label }}
       </p>
 
       <hr class="my-1 border-t border-line">
+
+      <NuxtLink
+        to="/settings"
+        role="menuitem"
+        class="tap-target block px-3 py-2 text-[15px] text-ink transition hover:bg-canvas focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink"
+        @click="close()"
+      >
+        Settings
+      </NuxtLink>
 
       <button
         type="button"

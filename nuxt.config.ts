@@ -48,6 +48,17 @@ export default defineNuxtConfig({
     apiBase: '',
     public: {
       apiBase: API_BASE,
+
+      /*
+        Where a provider sends the browser back after consent.
+
+        Empty means "derive it from the current origin", which is right whenever
+        the app is served from an origin the API already lists in
+        OAUTH_REDIRECT_URIS — dev and production both, without a rebuild. Set
+        NUXT_PUBLIC_OAUTH_REDIRECT_URI only where the registered URI is
+        something else; it has to match that list byte for byte.
+      */
+      oauthRedirectUri: '',
     },
   },
   routeRules: {
@@ -58,6 +69,7 @@ export default defineNuxtConfig({
       The auth pages keep SSR — they have nothing to wait for.
     */
     '/': { ssr: false },
+    '/settings': { ssr: false },
   },
   vite: {
     plugins: [tailwindcss()],

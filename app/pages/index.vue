@@ -7,11 +7,9 @@ useHead({ title: 'Home · Synora-AI' })
 
 const { user } = useAuth()
 
-// The API only knows the email — there is no profile name to greet them by yet.
-const displayName = computed(() => {
-  const local = user.value?.email.split('@')[0] ?? ''
-  return local ? local.charAt(0).toUpperCase() + local.slice(1) : 'there'
-})
+// A provider may have supplied a real name; otherwise this falls back to the
+// email's local part, and to "there" for a Telegram account that has neither.
+const displayName = computed(() => displayNameFor(user.value))
 
 const workspace = computed(() => `${displayName.value}'s Workspace`)
 

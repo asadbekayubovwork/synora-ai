@@ -4,9 +4,17 @@ import { computed } from 'vue'
 
 export interface ApiUser {
   id: string
-  email: string
+  /**
+   * Null on a Telegram account. Telegram hands out no address, so an account
+   * created through it has none until another provider or a password adds one.
+   */
+  email: string | null
+  full_name?: string | null
+  avatar_url?: string | null
   is_verified: boolean
   is_active: boolean
+  /** False for a provider-only account, which cannot use `/auth/login`. */
+  has_password?: boolean
   created_at: string
 }
 
@@ -43,9 +51,12 @@ export interface OtpSentResponse {
 
 export interface AuthUser {
   id: string
-  email: string
+  email: string | null
+  fullName: string | null
+  avatarUrl: string | null
   isVerified: boolean
   isActive: boolean
+  hasPassword: boolean
   createdAt: string
 }
 
@@ -72,11 +83,31 @@ function cookieOptions() {
 function toAuthUser(user: ApiUser): AuthUser {
   return {
     id: user.id,
-    email: user.email,
+    email: user.email ?? null,
+    fullName: user.full_name ?? null,
+    avatarUrl: user.avatar_url ?? null,
     isVerified: user.is_verified,
     isActive: user.is_active,
+    // Absent means an ordinary password account: the API only sends `false`
+    // for one created through a provider.
+    hasPassword: user.has_password ?? true,
     createdAt: user.created_at,
   }
+}
+
+/**
+ * The name to greet a user by, and to seed their avatar initial from.
+ *
+ * A provider account may carry a name and no email, or an email and no name,
+ * and a Telegram one can arrive with neither — so this falls through all three.
+ */
+export function displayNameFor(user: AuthUser | null): string {
+  if (user?.fullName) return user.fullName
+
+  const local = user?.email?.split('@')[0]
+  if (local) return local.charAt(0).toUpperCase() + local.slice(1)
+
+  return 'there'
 }
 
 /**

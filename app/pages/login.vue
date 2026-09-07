@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 definePageMeta({ layout: 'auth', middleware: 'guest' })
 
@@ -7,6 +7,16 @@ useHead({ title: 'Log in · Synora-AI' })
 
 const route = useRoute()
 const { login } = useAuth()
+
+// Awaited here rather than inside `OAuthButtons`: the page is the Suspense
+// boundary, so this is where waiting for the list costs nothing extra.
+const { data: oauthProviders } = await useOAuthProviders()
+
+/** `auth` middleware parks the intended page here when it bounces a visitor. */
+const redirectTarget = computed(() => {
+  const redirect = route.query.redirect
+  return typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/'
+})
 
 const form = reactive({ email: '', password: '' })
 const formError = ref('')
@@ -21,10 +31,7 @@ async function onSubmit() {
   pending.value = true
   try {
     await login(email, form.password)
-
-    // `auth` middleware parks the intended page here when it bounces a visitor.
-    const redirect = route.query.redirect
-    await navigateTo(typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/')
+    await navigateTo(redirectTarget.value)
   }
   catch (err) {
     // The password was right but the signup was never finished — the code step
@@ -53,14 +60,14 @@ async function onSubmit() {
         Welcome back
       </h1>
 
-      <div class="mt-5 space-y-2">
-        <SocialAuthButton provider="google" label="Sign in with Google" />
-        <SocialAuthButton provider="github" label="Sign in with GitHub" />
-      </div>
+      <OAuthButtons
+        :providers="oauthProviders"
+        action="Sign in"
+        :redirect="redirectTarget"
+        offset="mt-5"
+      />
 
-      <hr class="my-6 border-t border-line">
-
-      <form class="space-y-4" novalidate @submit.prevent="onSubmit">
+      <form class="mt-6 space-y-4" novalidate @submit.prevent="onSubmit">
         <AuthField
           v-model="form.email"
           label="Email"

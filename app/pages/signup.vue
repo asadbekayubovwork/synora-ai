@@ -11,6 +11,11 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 const route = useRoute()
 const { register, verifyOtp, resendOtp } = useAuth()
 
+// Awaited here rather than inside `OAuthButtons`: the page is the Suspense
+// boundary, and a component that suspends inside the step `<Transition>` below
+// is a good way to strand that transition half-run.
+const { data: oauthProviders } = await useOAuthProviders()
+
 /*
   `?verify=<email>` opens straight on the code step. Login sends unverified
   accounts here: the password was accepted, so all that is left is the code
@@ -150,14 +155,13 @@ function backToDetails() {
               Create an account
             </h1>
 
-            <div class="mt-10 space-y-2">
-              <SocialAuthButton provider="google" label="Sign up with Google" />
-              <SocialAuthButton provider="github" label="Sign up with GitHub" />
-            </div>
+            <OAuthButtons
+              :providers="oauthProviders"
+              action="Sign up"
+              offset="mt-10"
+            />
 
-            <hr class="my-6 border-t border-line">
-
-            <form class="space-y-4" novalidate @submit.prevent="onSubmitDetails">
+            <form class="mt-10 space-y-4" novalidate @submit.prevent="onSubmitDetails">
               <AuthField
                 v-model="form.email"
                 label="Email"
